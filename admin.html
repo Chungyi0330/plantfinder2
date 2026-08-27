@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>後台 — 植光譜 Plantary</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --color-bg: #FAF3E6;
+    --color-surface: #F4E9D6;
+    --color-surface-2: #ECDEC1;
+    --color-card: #FBF6EC;
+    --color-ink: #3B2E22;
+    --color-ink-soft: #7A6A55;
+    --color-primary: #6E7C4F;
+    --color-primary-dark: #4C5736;
+    --color-accent: #BE6B3B;
+    --color-gold: #C99A3D;
+    --color-line: #E1D0AC;
+    --color-danger: #A24A3B;
+    --radius-s: 6px;
+    --radius-m: 14px;
+    --shadow-card: 0 1px 2px rgba(59,46,34,0.06), 0 8px 24px -12px rgba(59,46,34,0.18);
+    --font-display: 'Noto Serif TC', serif;
+    --font-body: 'Noto Sans TC', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background: var(--color-bg); color: var(--color-ink); font-family: var(--font-body); line-height:1.6; }
+  h1,h2,h3{ font-family: var(--font-display); margin:0; font-weight:700; }
+  .container{ max-width: 980px; margin:0 auto; padding: 0 24px; }
+  :focus-visible{ outline: 2.5px solid var(--color-accent); outline-offset:2px; }
+
+  header{ padding:26px 0 18px; border-bottom:1px solid var(--color-line); }
+  .header-inner{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand-mark{ width:40px; height:40px; border-radius:50%; background: var(--color-primary); color:var(--color-bg); display:flex; align-items:center; justify-content:center; font-size:18px; }
+  header h1{ font-size:20px; }
+  .brand p{ margin:1px 0 0; font-size:12.5px; color: var(--color-ink-soft); }
+  .back-link{ font-size:13px; color: var(--color-ink-soft); text-decoration:none; border:1px solid var(--color-line); padding:7px 14px; border-radius:999px; }
+  .back-link:hover{ border-color: var(--color-primary); color: var(--color-ink); }
+
+  main{ padding: 32px 24px 90px; }
+
+  .notice{
+    background: var(--color-surface); border:1px solid var(--color-line); border-radius: var(--radius-m);
+    padding:18px 20px; margin-bottom:28px; font-size:13.5px; color: var(--color-ink-soft);
+  }
+  .notice h3{ font-size:14.5px; color: var(--color-ink); margin-bottom:8px; }
+  .notice ol{ margin:0; padding-left:20px; }
+  .notice li{ margin-bottom:4px; }
+  .notice code{ background: var(--color-surface-2); padding:1px 6px; border-radius:4px; font-family: var(--font-mono); font-size:12.5px; }
+
+  .panel{
+    background: var(--color-card); border:1px solid var(--color-line); border-radius: var(--radius-m);
+    padding:26px; margin-bottom:26px; box-shadow: var(--shadow-card);
+  }
+  .panel h2{ font-size:18px; margin-bottom:4px; }
+  .panel .sub{ font-size:13px; color: var(--color-ink-soft); margin:0 0 20px; }
+
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-family: var(--font-mono); font-size:11.5px; color: var(--color-ink-soft); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px; }
+  .field input[type=text], .field select, .field textarea{
+    width:100%; padding:11px 13px; border-radius: var(--radius-s); border:1.5px solid var(--color-line);
+    background: var(--color-bg); font-family: var(--font-body); font-size:14px; color: var(--color-ink);
+  }
+  .field textarea{ resize:vertical; min-height:70px; }
+  .field input:focus, .field select:focus, .field textarea:focus{ border-color: var(--color-primary); }
+  .field-row{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+  .hint{ font-size:12px; color: var(--color-ink-soft); margin-top:5px; }
+
+  .month-grid{ display:grid; grid-template-columns: repeat(6, 1fr); gap:8px; }
+  .month-chip{
+    border:1.5px solid var(--color-line); background: var(--color-bg); border-radius:8px;
+    padding:9px 0; text-align:center; font-size:13px; cursor:pointer; font-family: var(--font-mono); user-select:none;
+  }
+  .month-chip.active{ background: var(--color-primary); border-color: var(--color-primary); color:#fff; }
+  .season-presets{ display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+  .preset-btn{
+    border:1px dashed var(--color-line); background:none; border-radius:999px; padding:5px 12px;
+    font-size:12px; color: var(--color-ink-soft); cursor:pointer; font-family: var(--font-body);
+  }
+  .preset-btn:hover{ border-color: var(--color-primary); color: var(--color-ink); }
+
+  .tag-input-wrap{ display:flex; flex-wrap:wrap; gap:8px; padding:9px; border:1.5px solid var(--color-line); border-radius: var(--radius-s); background: var(--color-bg); }
+  .tag-pill{ display:flex; align-items:center; gap:6px; background: var(--color-surface-2); padding:4px 6px 4px 10px; border-radius:999px; font-size:12.5px; }
+  .tag-pill button{ background:none; border:none; cursor:pointer; color: var(--color-ink-soft); font-size:13px; line-height:1; padding:2px; }
+  .tag-input-wrap input{ border:none; outline:none; background:none; flex:1; min-width:100px; font-size:13.5px; font-family: var(--font-body); color: var(--color-ink); }
+
+  .image-drop{
+    border:1.5px dashed var(--color-line); border-radius: var(--radius-m); padding:18px; text-align:center;
+    cursor:pointer; background: var(--color-bg);
+  }
+  .image-drop:hover{ border-color: var(--color-primary); }
+  .image-drop.has-image{ padding:10px; }
+  .image-preview{ width:100%; max-height:220px; object-fit:contain; border-radius: var(--radius-s); }
+  .image-drop input[type=file]{ display:none; }
+  .image-drop-label{ font-size:13px; color: var(--color-ink-soft); }
+
+  .btn{
+    font-family: var(--font-body); font-size:14px; font-weight:500; padding:11px 20px; border-radius:999px;
+    border:1.5px solid var(--color-primary); background: var(--color-primary); color:#fff; cursor:pointer;
+  }
+  .btn.secondary{ background:none; color: var(--color-primary-dark); }
+  .btn.ghost{ background:none; border-color: var(--color-line); color: var(--color-ink-soft); }
+  .btn:disabled{ opacity:0.5; cursor:not-allowed; }
+  .btn-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; }
+
+  .staged-list{ display:flex; flex-direction:column; gap:10px; }
+  .staged-item{
+    display:flex; align-items:center; gap:14px; background: var(--color-surface); border:1px solid var(--color-line);
+    border-radius: var(--radius-s); padding:10px 14px;
+  }
+  .staged-thumb{ width:44px; height:44px; border-radius:8px; object-fit:cover; background: var(--color-surface-2); flex-shrink:0; }
+  .staged-thumb-fallback{ width:44px; height:44px; border-radius:8px; background: var(--color-surface-2); flex-shrink:0; display:flex; align-items:center; justify-content:center; color: var(--color-ink-soft); font-size:11px; }
+  .staged-info{ flex:1; min-width:0; }
+  .staged-info .name{ font-weight:700; font-size:14px; }
+  .staged-info .meta{ font-size:12px; color: var(--color-ink-soft); font-family: var(--font-mono); }
+  .staged-remove{ background:none; border:none; color: var(--color-danger); cursor:pointer; font-size:13px; }
+  .empty-hint{ font-size:13px; color: var(--color-ink-soft); text-align:center; padding:20px 0; }
+
+  .existing-list{ display:flex; flex-wrap:wrap; gap:8px; }
+  .existing-chip{ font-size:12px; background: var(--color-surface); border:1px solid var(--color-line); border-radius:999px; padding:5px 12px; color: var(--color-ink-soft); }
+
+  .toast{
+    position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px); opacity:0;
+    background: var(--color-ink); color: var(--color-bg); padding:12px 22px; border-radius:999px; font-size:13.5px;
+    transition: all .25s ease; pointer-events:none; z-index:100; max-width:90vw; text-align:center;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="brand-mark">✿</span>
+      <div>
+        <h1>後台管理</h1>
+        <p>植光譜 Plantary — 新增植物與圖片</p>
+      </div>
+    </div>
+    <a class="back-link" href="index.html">← 回到網站首頁</a>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="notice">
+    <h3>這個後台怎麼運作？</h3>
+    <p>因為網站發布在 GitHub Pages（純靜態、沒有伺服器），這個後台不會自動把資料存到雲端，而是幫你在瀏覽器裡把新植物整理好，最後讓你一次「下載」需要的檔案，再手動上傳到 GitHub。流程如下：</p>
+    <ol>
+      <li>在下方表單填寫植物資料、上傳圖片，按「加入清單」（可重複新增多筆）。</li>
+      <li>加入清單時圖片會自動下載一份，檔名已經對應好，直接把它放進 repo 的 <code>images/</code> 資料夾。</li>
+      <li>全部新增完後，按「下載 plants-data.js」，用下載的檔案覆蓋 repo 裡原本的 <code>plants-data.js</code>。</li>
+      <li>把 <code>images/</code> 裡新增的圖片與更新後的 <code>plants-data.js</code> 一起上傳、commit 到 GitHub，Pages 會自動更新網站。</li>
+    </ol>
+  </div>
+
+  <div class="panel" id="existingPanel">
+    <h2>目前資料檔中已有的植物</h2>
+    <p class="sub">僅供參考，避免重複新增；此後台不會編輯或刪除這些既有植物。</p>
+    <div class="existing-list" id="existingList"></div>
+  </div>
+
+  <div class="panel">
+    <h2>新增植物</h2>
+    <p class="sub">欄位盡量填寫詳細，網站的搜尋功能會一併搜尋名稱與描述內容。</p>
+
+    <div class="field">
+      <label for="fName">植物名稱</label>
+      <input type="text" id="fName" placeholder="例如：桂花">
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="fLatin">學名（選填）</label>
+        <input type="text" id="fLatin" placeholder="例如：Osmanthus fragrans">
+      </div>
+      <div class="field">
+        <label for="fHeight">株高／尺寸</label>
+        <input type="text" id="fHeight" placeholder="例如：150–400 cm">
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="fType">類型</label>
+        <select id="fType">
+          <option value="喬木">喬木</option>
+          <option value="灌木">灌木</option>
+          <option value="草本">草本</option>
+          <option value="藤本">藤本</option>
+          <option value="球根">球根</option>
+          <option value="多肉">多肉</option>
+          <option value="水生">水生</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fSun">日照</label>
+        <select id="fSun">
+          <option value="全日照">全日照</option>
+          <option value="半日照">半日照</option>
+          <option value="耐陰">耐陰</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="fWater">水分需求</label>
+        <select id="fWater">
+          <option value="一般">一般</option>
+          <option value="耐旱">耐旱</option>
+          <option value="喜濕">喜濕</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>花色（輸入後按 Enter 新增）</label>
+        <div class="tag-input-wrap" id="colorTagWrap">
+          <input type="text" id="fColorInput" placeholder="例如：粉、白…">
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>花期（可複選月份，或用下方快速選取）</label>
+      <div class="season-presets">
+        <button type="button" class="preset-btn" data-preset="1,2,3">春季（1–3月）</button>
+        <button type="button" class="preset-btn" data-preset="4,5,6">春夏（4–6月）</button>
+        <button type="button" class="preset-btn" data-preset="7,8,9">夏秋（7–9月）</button>
+        <button type="button" class="preset-btn" data-preset="10,11,12">秋冬（10–12月）</button>
+        <button type="button" class="preset-btn" data-preset="1,2,3,4,5,6,7,8,9,10,11,12">全年</button>
+        <button type="button" class="preset-btn" data-preset="">清空</button>
+      </div>
+      <div class="month-grid" id="monthGrid"></div>
+    </div>
+
+    <div class="field">
+      <label for="fDesc">特徵描述</label>
+      <textarea id="fDesc" placeholder="外觀、生長習性、原產地等，建議寫得詳細一些…"></textarea>
+    </div>
+
+    <div class="field">
+      <label for="fCare">養護要點</label>
+      <textarea id="fCare" placeholder="日照、澆水、修剪、施肥等照顧建議…"></textarea>
+    </div>
+
+    <div class="field">
+      <label>植物圖片（選填，會自動下載一份供你上傳到 images 資料夾）</label>
+      <div class="image-drop" id="imageDrop">
+        <input type="file" id="fImage" accept="image/*">
+        <div id="imageDropInner">
+          <p class="image-drop-label">點此選擇圖片，或拖曳圖片到這裡</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" id="addBtn">加入清單</button>
+      <button class="btn ghost" id="clearFormBtn" type="button">清空表單</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>本次新增的植物（<span id="stagedCount">0</span>）</h2>
+    <p class="sub">確認清單無誤後，再下載完整的 plants-data.js。</p>
+    <div class="staged-list" id="stagedList">
+      <p class="empty-hint">目前還沒有新增任何植物。</p>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="exportBtn" disabled>下載 plants-data.js</button>
+      <button class="btn ghost" id="resetStagedBtn" type="button" disabled>清空本次新增</button>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="plants-data.js"></script>
+<script>
+/* ============ 共用資料 ============ */
+const EXISTING = (typeof PLANTS !== 'undefined') ? PLANTS : [];
+const STORAGE_KEY = 'plantary_admin_staged_v1';
+
+let staged = [];
+try{
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(saved) staged = JSON.parse(saved);
+}catch(e){ staged = []; }
+
+/* 縮圖只存在記憶體中（重新整理頁面後會消失，不影響已下載的檔案與資料本身） */
+let stagedThumbs = {};
+
+let selectedMonths = [];
+let colorTags = [];
+let currentImageFile = null;
+let currentImageDataUrl = null;
+
+/* ============ 既有植物列表 ============ */
+function renderExisting(){
+  const list = document.getElementById('existingList');
+  if(EXISTING.length === 0){
+    list.innerHTML = '<p class="empty-hint">找不到 plants-data.js，或目前尚無植物資料。</p>';
+    return;
+  }
+  list.innerHTML = EXISTING.map(p => `<span class="existing-chip">${p.name}</span>`).join('');
+}
+
+/* ============ 月份選取 ============ */
+function renderMonthGrid(){
+  const grid = document.getElementById('monthGrid');
+  grid.innerHTML = '';
+  for(let m=1;m<=12;m++){
+    const chip = document.createElement('div');
+    chip.className = 'month-chip' + (selectedMonths.includes(m) ? ' active' : '');
+    chip.textContent = m + '月';
+    chip.addEventListener('click', () => {
+      if(selectedMonths.includes(m)){
+        selectedMonths = selectedMonths.filter(x => x !== m);
+      }else{
+        selectedMonths.push(m);
+      }
+      renderMonthGrid();
+    });
+    grid.appendChild(chip);
+  }
+}
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const val = btn.getAttribute('data-preset');
+    selectedMonths = val ? val.split(',').map(Number) : [];
+    renderMonthGrid();
+  });
+});
+
+/* ============ 花色標籤 ============ */
+function renderColorTags(){
+  const wrap = document.getElementById('colorTagWrap');
+  wrap.querySelectorAll('.tag-pill').forEach(el => el.remove());
+  const input = document.getElementById('fColorInput');
+  colorTags.forEach((c, i) => {
+    const pill = document.createElement('span');
+    pill.className = 'tag-pill';
+    pill.innerHTML = `${c} <button type="button" aria-label="移除">✕</button>`;
+    pill.querySelector('button').addEventListener('click', () => {
+      colorTags.splice(i,1);
+      renderColorTags();
+    });
+    wrap.insertBefore(pill, input);
+  });
+}
+document.getElementById('fColorInput').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    const v = e.target.value.trim();
+    if(v && !colorTags.includes(v)){
+      colorTags.push(v);
+      renderColorTags();
+    }
+    e.target.value = '';
+  }
+});
+
+/* ============ 圖片上傳 ============ */
+const imageDrop = document.getElementById('imageDrop');
+const fImage = document.getElementById('fImage');
+imageDrop.addEventListener('click', () => fImage.click());
+imageDrop.addEventListener('dragover', (e) => { e.preventDefault(); imageDrop.style.borderColor = 'var(--color-primary)'; });
+imageDrop.addEventListener('dragleave', () => { imageDrop.style.borderColor = ''; });
+imageDrop.addEventListener('drop', (e) => {
+  e.preventDefault();
+  imageDrop.style.borderColor = '';
+  if(e.dataTransfer.files && e.dataTransfer.files[0]) handleImageFile(e.dataTransfer.files[0]);
+});
+fImage.addEventListener('change', (e) => {
+  if(e.target.files && e.target.files[0]) handleImageFile(e.target.files[0]);
+});
+function handleImageFile(file){
+  if(!file.type.startsWith('image/')){ showToast('請選擇圖片檔案'); return; }
+  currentImageFile = file;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    currentImageDataUrl = e.target.result;
+    document.getElementById('imageDropInner').innerHTML = `<img class="image-preview" src="${currentImageDataUrl}" alt="預覽">`;
+    imageDrop.classList.add('has-image');
+  };
+  reader.readAsDataURL(file);
+}
+function resetImageField(){
+  currentImageFile = null;
+  currentImageDataUrl = null;
+  fImage.value = '';
+  imageDrop.classList.remove('has-image');
+  document.getElementById('imageDropInner').innerHTML = '<p class="image-drop-label">點此選擇圖片，或拖曳圖片到這裡</p>';
+}
+
+/* ============ 表單清空 ============ */
+function clearForm(){
+  document.getElementById('fName').value = '';
+  document.getElementById('fLatin').value = '';
+  document.getElementById('fHeight').value = '';
+  document.getElementById('fType').value = '喬木';
+  document.getElementById('fSun').value = '全日照';
+  document.getElementById('fWater').value = '一般';
+  document.getElementById('fDesc').value = '';
+  document.getElementById('fCare').value = '';
+  selectedMonths = [];
+  colorTags = [];
+  renderMonthGrid();
+  renderColorTags();
+  resetImageField();
+}
+document.getElementById('clearFormBtn').addEventListener('click', clearForm);
+
+/* ============ 檔名／id 工具 ============ */
+function nextId(){
+  const allIds = EXISTING.map(p => p.id).concat(staged.map(p => p.id));
+  return allIds.length ? Math.max(...allIds) + 1 : 1;
+}
+function fileExt(filename){
+  const m = /\.([a-zA-Z0-9]+)$/.exec(filename || '');
+  return m ? m[1].toLowerCase() : 'jpg';
+}
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+/* ============ 加入清單 ============ */
+document.getElementById('addBtn').addEventListener('click', () => {
+  const name = document.getElementById('fName').value.trim();
+  if(!name){ showToast('請至少填寫植物名稱'); return; }
+  if(selectedMonths.length === 0){ showToast('請至少選擇一個花期月份'); return; }
+
+  const id = nextId();
+  let imagePath = null;
+
+  if(currentImageFile){
+    const ext = fileExt(currentImageFile.name);
+    imagePath = `images/plant-${id}.${ext}`;
+    downloadBlob(currentImageFile, `plant-${id}.${ext}`);
+  }
+
+  const plant = {
+    id,
+    name,
+    latin: document.getElementById('fLatin').value.trim() || '—',
+    type: document.getElementById('fType').value,
+    months: [...selectedMonths].sort((a,b)=>a-b),
+    sun: document.getElementById('fSun').value,
+    water: document.getElementById('fWater').value,
+    colors: [...colorTags],
+    height: document.getElementById('fHeight').value.trim() || '—',
+    image: imagePath,
+    desc: document.getElementById('fDesc').value.trim() || '（尚未填寫描述）',
+    care: document.getElementById('fCare').value.trim() || '（尚未填寫養護要點）'
+  };
+
+  staged.push(plant);
+  if(currentImageDataUrl){ stagedThumbs[id] = currentImageDataUrl; }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(staged));
+  renderStaged();
+  clearForm();
+  showToast(imagePath ? '已加入清單，圖片也已下載，記得放進 images 資料夾' : '已加入清單');
+});
+
+/* ============ 已新增清單 ============ */
+function renderStaged(){
+  const list = document.getElementById('stagedList');
+  document.getElementById('stagedCount').textContent = staged.length;
+  document.getElementById('exportBtn').disabled = staged.length === 0;
+  document.getElementById('resetStagedBtn').disabled = staged.length === 0;
+
+  if(staged.length === 0){
+    list.innerHTML = '<p class="empty-hint">目前還沒有新增任何植物。</p>';
+    return;
+  }
+
+  list.innerHTML = staged.map((p, i) => `
+    <div class="staged-item">
+      ${stagedThumbs[p.id] ? `<img class="staged-thumb" src="${stagedThumbs[p.id]}" alt="">` : `<span class="staged-thumb-fallback">${p.type}</span>`}
+      <div class="staged-info">
+        <div class="name">${p.name}</div>
+        <div class="meta">${p.type} · ${p.sun} · ${monthLabel(p.months)}${p.image ? ' · 已附圖片' : ''}</div>
+      </div>
+      <button class="staged-remove" data-i="${i}">移除</button>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.staged-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      staged.splice(Number(btn.getAttribute('data-i')), 1);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(staged));
+      renderStaged();
+    });
+  });
+}
+function monthLabel(months){
+  if(months.length === 12) return '全年';
+  return months.map(m => m+'月').join('、');
+}
+
+document.getElementById('resetStagedBtn').addEventListener('click', () => {
+  if(!confirm('確定要清空「本次新增」清單嗎？這不會影響已經下載的檔案。')) return;
+  staged = [];
+  localStorage.removeItem(STORAGE_KEY);
+  renderStaged();
+});
+
+/* ============ 匯出 plants-data.js ============ */
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const all = EXISTING.concat(staged);
+  const body = all.map(p => {
+    const fields = [
+      `id:${p.id}`,
+      `name:${JSON.stringify(p.name)}`,
+      `latin:${JSON.stringify(p.latin)}`,
+      `type:${JSON.stringify(p.type)}`,
+      `months:${JSON.stringify(p.months)}`,
+      `sun:${JSON.stringify(p.sun)}`,
+      `water:${JSON.stringify(p.water)}`,
+      `colors:${JSON.stringify(p.colors)}`,
+      `height:${JSON.stringify(p.height)}`,
+      `image:${p.image ? JSON.stringify(p.image) : 'null'}`,
+      `desc:${JSON.stringify(p.desc)}`,
+      `care:${JSON.stringify(p.care)}`
+    ];
+    return `  {${fields.join(',')}}`;
+  }).join(',\n');
+
+  const fileContent = `/* ============================================================
+   植光譜 Plantary — 植物資料檔（由後台 admin.html 匯出）
+   這個檔案被 index.html 與 admin.html 共同讀取。
+   ============================================================ */
+const PLANTS = [
+${body}
+];
+`;
+  downloadBlob(new Blob([fileContent], {type:'text/javascript'}), 'plants-data.js');
+  showToast('plants-data.js 已下載，記得覆蓋 repo 裡的同名檔案並上傳圖片');
+});
+
+/* ============ Toast ============ */
+let toastTimer = null;
+function showToast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+/* ============ 初始化 ============ */
+renderExisting();
+renderMonthGrid();
+renderColorTags();
+renderStaged();
+</script>
+</body>
+</html>

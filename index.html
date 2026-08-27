@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>植光譜 Plantary — 依花期尋找植物</title>
+<meta name="description" content="以花期、日照與耐旱程度尋找植物的檢索網頁。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --color-bg: #FAF3E6;
+    --color-surface: #F4E9D6;
+    --color-surface-2: #ECDEC1;
+    --color-card: #FBF6EC;
+    --color-ink: #3B2E22;
+    --color-ink-soft: #7A6A55;
+    --color-primary: #6E7C4F;
+    --color-primary-dark: #4C5736;
+    --color-accent: #BE6B3B;
+    --color-gold: #C99A3D;
+    --color-line: #E1D0AC;
+    --radius-s: 6px;
+    --radius-m: 14px;
+    --radius-l: 26px;
+    --shadow-card: 0 1px 2px rgba(59,46,34,0.06), 0 8px 24px -12px rgba(59,46,34,0.18);
+    --font-display: 'Noto Serif TC', serif;
+    --font-body: 'Noto Sans TC', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin:0;
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  img,svg{ display:block; max-width:100%; }
+  .container{
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+  h1,h2,h3{ font-family: var(--font-display); margin:0; font-weight:700; color: var(--color-ink); }
+  a{ color: inherit; }
+  :focus-visible{ outline: 2.5px solid var(--color-accent); outline-offset: 3px; border-radius: 4px; }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  }
+
+  /* ---------- Header ---------- */
+  .site-header{ padding: 26px 0 18px; border-bottom: 1px solid var(--color-line); }
+  .header-inner{ display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+  .brand{ display:flex; align-items:center; gap:14px; }
+  .brand-mark{
+    width:44px; height:44px; border-radius:50%;
+    background: var(--color-primary); color: var(--color-bg);
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; flex-shrink:0;
+  }
+  .brand h1{ font-size: 24px; letter-spacing: 0.02em; }
+  .tagline{ margin:2px 0 0; font-size:13px; color: var(--color-ink-soft); }
+  .header-note{ margin:0; font-size:13px; color: var(--color-ink-soft); font-family: var(--font-mono); }
+
+  /* ---------- Hero ---------- */
+  .hero{ padding: 56px 0 40px; }
+  .hero-inner{ display:grid; grid-template-columns: 1.05fr 0.95fr; gap: 48px; align-items:center; }
+  .eyebrow{
+    font-family: var(--font-mono); font-size:12px; letter-spacing:0.18em;
+    color: var(--color-accent); margin:0 0 14px; text-transform:uppercase;
+  }
+  .hero-text h2{ font-size: clamp(30px, 4vw, 44px); line-height:1.28; margin-bottom:18px; }
+  .hero-desc{ color: var(--color-ink-soft); font-size:15.5px; max-width: 46ch; margin: 0 0 26px; }
+  .search-row input{
+    width:100%; padding:15px 18px; border-radius: var(--radius-m);
+    border: 1.5px solid var(--color-line); background: var(--color-card);
+    font-family: var(--font-body); font-size:15px; color: var(--color-ink);
+  }
+  .search-row input::placeholder{ color: #A8977E; }
+  .search-row input:focus{ border-color: var(--color-primary); }
+
+  .hero-wheel{ display:flex; flex-direction:column; align-items:center; gap:14px; }
+  #bloomWheel{ width:100%; max-width: 340px; }
+  .wheel-hint{ margin:0; font-size:12.5px; color: var(--color-ink-soft); text-align:center; }
+  .wedge{ cursor:pointer; transition: opacity .15s ease, transform .15s ease; transform-origin: 160px 160px; }
+  .wedge:hover{ opacity: 0.85; }
+  .wedge.active{ transform: scale(1.045); }
+  .wheel-month-label{
+    font-family: var(--font-mono); font-size: 11px; fill: var(--color-ink-soft);
+    pointer-events:none; text-anchor:middle;
+  }
+  .wheel-center{ fill: var(--color-bg); stroke: var(--color-line); stroke-width:1; cursor:pointer; }
+  .wheel-center-label{ font-family: var(--font-display); font-size: 15px; font-weight:700; fill: var(--color-ink); text-anchor:middle; pointer-events:none; }
+  .wheel-center-sub{ font-family: var(--font-mono); font-size: 9.5px; fill: var(--color-ink-soft); text-anchor:middle; pointer-events:none; }
+
+  /* ---------- Filters ---------- */
+  .filters{ background: var(--color-surface); border-top:1px solid var(--color-line); border-bottom:1px solid var(--color-line); padding: 20px 0; }
+  .filters .container{ display:flex; flex-wrap:wrap; gap:18px 30px; align-items:center; }
+  .filter-group{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .filter-label{ font-family: var(--font-mono); font-size:12px; color: var(--color-ink-soft); flex-shrink:0; }
+  .chip-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .chip{
+    border:1.5px solid var(--color-line); background: var(--color-card);
+    color: var(--color-ink); padding:6px 13px; border-radius: 999px;
+    font-size:13px; cursor:pointer; font-family: var(--font-body); transition: all .12s ease;
+  }
+  .chip:hover{ border-color: var(--color-primary); }
+  .chip.active{ background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+  .reset-btn{
+    margin-left:auto; background:none; border:none; color: var(--color-accent);
+    font-size:13px; cursor:pointer; text-decoration:underline; text-underline-offset:3px;
+    font-family: var(--font-body); padding:6px 4px;
+  }
+
+  /* ---------- Results ---------- */
+  main.container{ padding: 34px 28px 90px; }
+  .results-meta{ font-family: var(--font-mono); font-size:12.5px; color: var(--color-ink-soft); margin-bottom:18px; }
+  .plant-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(252px, 1fr)); gap:18px; }
+  .plant-card{
+    background: var(--color-card); border:1px solid var(--color-line); border-radius: var(--radius-m);
+    padding:20px; cursor:pointer; text-align:left; box-shadow: var(--shadow-card);
+    transition: transform .15s ease, border-color .15s ease; font-family: var(--font-body); color: var(--color-ink);
+    display:flex; flex-direction:column; gap:12px;
+  }
+  .plant-card:hover{ transform: translateY(-3px); border-color: var(--color-primary); }
+  .card-media{
+    position:relative; width:100%; aspect-ratio: 4/3; border-radius: var(--radius-s);
+    overflow:hidden; background: var(--color-surface-2); display:flex;
+    align-items:center; justify-content:center;
+  }
+  .card-media img{ width:100%; height:100%; object-fit:cover; }
+  .card-media .card-icon{ width:38px; height:38px; color: var(--color-primary); }
+  .card-media .card-bloom-badge{ position:absolute; top:10px; right:10px; background: rgba(251,246,236,0.92); }
+  .card-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+  .card-icon{ width:34px; height:34px; color: var(--color-primary); flex-shrink:0; }
+  .card-bloom-badge{
+    font-family: var(--font-mono); font-size:11px; color: var(--color-accent);
+    background: #F3E4D2; padding:3px 8px; border-radius:6px; white-space:nowrap;
+  }
+  .card-name{ font-family: var(--font-display); font-size:18px; font-weight:700; margin:0; }
+  .card-latin{ font-family: var(--font-mono); font-style:italic; font-size:12px; color: var(--color-ink-soft); margin:2px 0 0; }
+  .card-desc{ font-size:13.5px; color: var(--color-ink-soft); margin:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .card-tags{ display:flex; gap:6px; flex-wrap:wrap; margin-top:auto; }
+  .tag{ font-size:11px; padding:3px 8px; border-radius:6px; background: var(--color-surface-2); color: var(--color-ink-soft); }
+  .color-dot{ width:9px; height:9px; border-radius:50%; display:inline-block; margin-right:5px; vertical-align:middle; border:1px solid rgba(0,0,0,0.12); }
+  .empty-state{ text-align:center; padding: 60px 20px; color: var(--color-ink-soft); }
+  .empty-state h3{ font-size:18px; margin-bottom:8px; }
+
+  /* ---------- Detail panel ---------- */
+  .detail-scrim{
+    position:fixed; inset:0; background: rgba(59,46,34,0.35); opacity:0; pointer-events:none;
+    transition: opacity .2s ease; z-index:40;
+  }
+  .detail-scrim.open{ opacity:1; pointer-events:auto; }
+  .detail-panel{
+    position:fixed; top:0; right:0; height:100%; width: min(440px, 92vw);
+    background: var(--color-bg); z-index:50; box-shadow: -10px 0 40px -10px rgba(0,0,0,0.25);
+    transform: translateX(100%); transition: transform .25s ease; overflow-y:auto;
+  }
+  .detail-panel.open{ transform: translateX(0); }
+  .detail-inner{ padding: 30px 30px 60px; }
+  .detail-close{
+    background: var(--color-surface-2); border:none; width:34px; height:34px; border-radius:50%;
+    cursor:pointer; font-size:16px; color: var(--color-ink); margin-bottom: 20px;
+  }
+  .detail-media{
+    width:100%; aspect-ratio: 3/2; border-radius: var(--radius-m); overflow:hidden;
+    background: var(--color-surface); display:flex; align-items:center; justify-content:center;
+    margin-bottom:16px;
+  }
+  .detail-media img{ width:100%; height:100%; object-fit:cover; }
+  .detail-media .detail-icon{ width:52px; height:52px; color: var(--color-primary); margin:0; }
+  .detail-icon{ width:52px; height:52px; color: var(--color-primary); margin-bottom:12px; }
+  .detail-inner h2{ font-size:26px; margin-bottom:4px; }
+  .detail-latin{ font-family: var(--font-mono); font-style:italic; color: var(--color-ink-soft); font-size:14px; margin:0 0 18px; }
+  .detail-meta{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:22px; }
+  .meta-item{ background: var(--color-surface); border-radius: var(--radius-s); padding:10px 12px; }
+  .meta-item .k{ font-family: var(--font-mono); font-size:10.5px; color: var(--color-ink-soft); display:block; margin-bottom:3px; }
+  .meta-item .v{ font-size:13.5px; font-weight:500; }
+  .detail-section{ margin-bottom:20px; }
+  .detail-section h4{ font-family: var(--font-mono); font-size:11.5px; letter-spacing:0.08em; text-transform:uppercase; color: var(--color-accent); margin:0 0 8px; }
+  .detail-section p{ font-size:14.5px; color: var(--color-ink); margin:0; }
+
+  /* ---------- Footer ---------- */
+  .site-footer{ border-top:1px solid var(--color-line); padding: 26px 0 40px; }
+  .site-footer p{ font-size:12.5px; color: var(--color-ink-soft); margin:0; }
+
+  @media (max-width: 860px){
+    .hero-inner{ grid-template-columns: 1fr; }
+    .hero-wheel{ order:-1; }
+  }
+  @media (max-width: 560px){
+    .container{ padding: 0 18px; }
+    .header-note{ display:none; }
+    .filters .container{ flex-direction:column; align-items:flex-start; }
+    .reset-btn{ margin-left:0; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="brand-mark">✿</span>
+      <div>
+        <h1>植光譜</h1>
+        <p class="tagline">Plantary — 依花期尋找你的植物</p>
+      </div>
+    </div>
+    <p class="header-note">22 種植物 · 花期 / 日照 / 耐旱程度 檢索</p>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-text">
+      <p class="eyebrow">Plant Finder</p>
+      <h2>轉動花曆，<br>找到此刻盛開的植物</h2>
+      <p class="hero-desc">右側是一年十二個月的花期輪，點選任一月份，即可看到當月盛開的植物；也可以直接搜尋名稱、關鍵字，或用下方條件縮小範圍。每種植物都附上較完整的特徵與養護說明。</p>
+      <div class="search-row">
+        <input type="search" id="searchInput" placeholder="搜尋植物名稱、特徵，例如「耐旱」「桂花」…" aria-label="搜尋植物">
+      </div>
+    </div>
+    <div class="hero-wheel">
+      <svg id="bloomWheel" viewBox="0 0 320 320" role="img" aria-label="十二個月花期輪，可點選月份篩選"></svg>
+      <p class="wheel-hint" id="wheelHint">點選月份，篩選當月盛開的植物</p>
+    </div>
+  </div>
+</section>
+
+<section class="filters">
+  <div class="container">
+    <div class="filter-group" data-group="type">
+      <span class="filter-label">類型</span>
+      <div class="chip-row" id="typeChips"></div>
+    </div>
+    <div class="filter-group" data-group="sun">
+      <span class="filter-label">日照</span>
+      <div class="chip-row" id="sunChips"></div>
+    </div>
+    <div class="filter-group" data-group="water">
+      <span class="filter-label">水分</span>
+      <div class="chip-row" id="waterChips"></div>
+    </div>
+    <button id="resetBtn" class="reset-btn">清除全部篩選</button>
+  </div>
+</section>
+
+<main class="container">
+  <p class="results-meta" id="resultCount"></p>
+  <div class="plant-grid" id="plantGrid"></div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>植光譜 Plantary — 純前端的植物花期檢索頁面，無需伺服器，可直接部署於 GitHub Pages。內容為園藝參考描述，實際花期與生長狀況會因地區氣候與栽培條件而有所不同。 <a href="admin.html" style="color:var(--color-ink-soft)">管理後台</a></p>
+  </div>
+</footer>
+
+<div class="detail-scrim" id="detailScrim"></div>
+<aside class="detail-panel" id="detailPanel" aria-hidden="true">
+  <div class="detail-inner" id="detailInner"></div>
+</aside>
+
+<script src="plants-data.js"></script>
+<script>
+/* ============ 植物資料由 plants-data.js 提供（PLANTS 陣列） ============ */
+const MONTH_NAMES = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+const COLOR_HEX = {
+  '紅':'#B5482D','粉':'#E3ACA2','白':'#FBF8F0','黃':'#D9A62E','橙':'#C97A3D',
+  '紫':'#7C6A9C','藍':'#5F80A6','金黃':'#D4A017','銀白':'#D8D2C4','橙紅':'#C1622F'
+};
+/* 植物資料改由 plants-data.js 提供（同一個 PLANTS 陣列），
+   後台新增植物後只要覆蓋 plants-data.js 這個檔案就會更新網站內容。 */
+
+const ICONS = {
+  '喬木': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-7"/><circle cx="12" cy="8.5" r="6.2"/></svg>`,
+  '灌木': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-5"/><circle cx="8" cy="11" r="4"/><circle cx="16" cy="10" r="4.6"/><circle cx="12" cy="7" r="3.6"/></svg>`,
+  '草本': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="M12 12c0-4 3-6 6-6-1 4-3 6-6 6Z"/><path d="M12 15c0-4-3-6-6-6 1 4 3 6 6 6Z"/></svg>`,
+  '藤本': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20c4-2 2-5 6-6s2-5 6-6 2-5 4-6"/><circle cx="9" cy="14" r="1.4"/><circle cx="16" cy="7" r="1.4"/></svg>`,
+  '球根': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12V4"/><path d="M12 4c-2 1-3 2-3 3.5S10 10 12 10s3-1 3-2.5S14 5 12 4Z"/><path d="M8 21c0-5 1.8-9 4-9s4 4 4 9Z"/></svg>`,
+  '多肉': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-4-1-6-4-6-8 0-3 2-5 3-7 .3 2 1 3 2 3s1.7-1 2-3c1 2 3 4 3 7 0 4-2 7-6 8Z"/></svg>`,
+  '水生': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16c2 1.5 4 1.5 6 0s4-1.5 6 0 4 1.5 6 0"/><path d="M12 13c-3-2-3-6 0-9 3 3 3 7 0 9Z"/></svg>`
+};
+
+/* ============ 狀態 ============ */
+const state = { search:'', type:null, sun:null, water:null, month:null };
+
+/* ============ 花期輪 ============ */
+function polar(cx,cy,r,angleDeg){
+  const a = (angleDeg - 90) * Math.PI / 180;
+  return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+}
+function wedgePath(cx,cy,rOuter,rInner,startAngle,endAngle){
+  const p1 = polar(cx,cy,rOuter,endAngle);
+  const p2 = polar(cx,cy,rOuter,startAngle);
+  const p3 = polar(cx,cy,rInner,startAngle);
+  const p4 = polar(cx,cy,rInner,endAngle);
+  const largeArc = (endAngle - startAngle) <= 180 ? 0 : 1;
+  return `M ${p1.x.toFixed(2)} ${p1.y.toFixed(2)} A ${rOuter} ${rOuter} 0 ${largeArc} 0 ${p2.x.toFixed(2)} ${p2.y.toFixed(2)} L ${p3.x.toFixed(2)} ${p3.y.toFixed(2)} A ${rInner} ${rInner} 0 ${largeArc} 1 ${p4.x.toFixed(2)} ${p4.y.toFixed(2)} Z`;
+}
+
+function renderWheel(){
+  const svg = document.getElementById('bloomWheel');
+  const cx = 160, cy = 160, rOuter = 150, rInner = 60;
+  const counts = MONTH_NAMES.map((_, i) => PLANTS.filter(p => p.months.includes(i+1)).length);
+  const maxCount = Math.max(...counts);
+
+  let html = '';
+  for(let i=0;i<12;i++){
+    const start = i*30, end = (i+1)*30;
+    const mid = (start+end)/2;
+    const ratio = counts[i] / maxCount;
+    const isActive = state.month === i+1;
+    const baseColor = isActive ? 'var(--color-gold)' : `rgba(110,124,79,${0.18 + ratio*0.55})`;
+    html += `<path class="wedge${isActive?' active':''}" d="${wedgePath(cx,cy,rOuter,rInner,start,end)}"
+      fill="${baseColor}" stroke="var(--color-bg)" stroke-width="2" data-month="${i+1}"
+      role="button" tabindex="0" aria-label="${MONTH_NAMES[i]}，${counts[i]} 種植物盛開"></path>`;
+    const labelPos = polar(cx,cy,(rOuter+rInner)/2 + 2, mid);
+    html += `<text class="wheel-month-label" x="${labelPos.x.toFixed(1)}" y="${labelPos.y.toFixed(1)}" dy="4">${i+1}</text>`;
+  }
+  html += `<circle class="wheel-center" cx="${cx}" cy="${cy}" r="${rInner-6}" data-month="reset"></circle>`;
+  const centerLabel = state.month ? MONTH_NAMES[state.month-1] : '全年';
+  const centerSub = state.month ? `${counts[state.month-1]} 種盛開` : '點選重置';
+  html += `<text class="wheel-center-label" x="${cx}" y="${cy-2}">${centerLabel}</text>`;
+  html += `<text class="wheel-center-sub" x="${cx}" y="${cy+15}">${centerSub}</text>`;
+
+  svg.innerHTML = html;
+
+  svg.querySelectorAll('[data-month]').forEach(el => {
+    el.addEventListener('click', () => {
+      const m = el.getAttribute('data-month');
+      state.month = (m === 'reset') ? null : (state.month === Number(m) ? null : Number(m));
+      renderWheel();
+      renderGrid();
+    });
+    el.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); el.click(); }
+    });
+  });
+}
+
+/* ============ 篩選 chips ============ */
+function buildChips(containerId, values, groupKey){
+  const container = document.getElementById(containerId);
+  container.innerHTML = values.map(v =>
+    `<button class="chip" data-value="${v}">${v}</button>`
+  ).join('');
+  container.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const v = chip.getAttribute('data-value');
+      state[groupKey] = (state[groupKey] === v) ? null : v;
+      syncChipStyles();
+      renderGrid();
+    });
+  });
+}
+
+function syncChipStyles(){
+  document.querySelectorAll('#typeChips .chip').forEach(c => c.classList.toggle('active', c.getAttribute('data-value') === state.type));
+  document.querySelectorAll('#sunChips .chip').forEach(c => c.classList.toggle('active', c.getAttribute('data-value') === state.sun));
+  document.querySelectorAll('#waterChips .chip').forEach(c => c.classList.toggle('active', c.getAttribute('data-value') === state.water));
+}
+
+/* ============ 卡片 / 結果 ============ */
+function matchesFilters(p){
+  if(state.type && p.type !== state.type) return false;
+  if(state.sun && p.sun !== state.sun) return false;
+  if(state.water && p.water !== state.water) return false;
+  if(state.month && !p.months.includes(state.month)) return false;
+  if(state.search){
+    const q = state.search.toLowerCase();
+    const hay = (p.name + p.latin + p.desc + p.care + p.colors.join('')).toLowerCase();
+    if(!hay.includes(q)) return false;
+  }
+  return true;
+}
+
+function monthRangeLabel(months){
+  if(months.length === 12) return '全年';
+  return MONTH_NAMES[months[0]-1] + (months.length>1 ? ' – ' + MONTH_NAMES[months[months.length-1]-1] : '');
+}
+
+function renderGrid(){
+  const grid = document.getElementById('plantGrid');
+  const results = PLANTS.filter(matchesFilters);
+  document.getElementById('resultCount').textContent = `共找到 ${results.length} 種植物`;
+
+  if(results.length === 0){
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <h3>找不到符合條件的植物</h3>
+      <p>試著清除部分篩選條件，或換個關鍵字搜尋看看。</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = results.map(p => `
+    <button class="plant-card" data-id="${p.id}">
+      <div class="card-media">
+        ${p.image ? `<img src="${p.image}" alt="${p.name}" loading="lazy">` : `<span class="card-icon">${ICONS[p.type] || ''}</span>`}
+        <span class="card-bloom-badge">${monthRangeLabel(p.months)}</span>
+      </div>
+      <div>
+        <h3 class="card-name">${p.name}</h3>
+        <p class="card-latin">${p.latin}</p>
+      </div>
+      <p class="card-desc">${p.desc}</p>
+      <div class="card-tags">
+        <span class="tag">${p.type}</span>
+        <span class="tag">${p.sun}</span>
+        <span class="tag">${p.water}</span>
+      </div>
+    </button>
+  `).join('');
+
+  grid.querySelectorAll('.plant-card').forEach(card => {
+    card.addEventListener('click', () => openDetail(Number(card.getAttribute('data-id'))));
+  });
+}
+
+/* ============ 詳細面板 ============ */
+function openDetail(id){
+  const p = PLANTS.find(x => x.id === id);
+  if(!p) return;
+  const panel = document.getElementById('detailPanel');
+  const scrim = document.getElementById('detailScrim');
+  const colorDots = p.colors.map(c => `<span class="color-dot" style="background:${COLOR_HEX[c] || '#ccc'}"></span>${c}`).join('　');
+
+  document.getElementById('detailInner').innerHTML = `
+    <button class="detail-close" id="detailCloseBtn" aria-label="關閉">✕</button>
+    <div class="detail-media">
+      ${p.image ? `<img src="${p.image}" alt="${p.name}">` : `<span class="detail-icon">${ICONS[p.type] || ''}</span>`}
+    </div>
+    <h2>${p.name}</h2>
+    <p class="detail-latin">${p.latin}</p>
+    <div class="detail-meta">
+      <div class="meta-item"><span class="k">花期</span><span class="v">${monthRangeLabel(p.months)}</span></div>
+      <div class="meta-item"><span class="k">類型</span><span class="v">${p.type}</span></div>
+      <div class="meta-item"><span class="k">日照</span><span class="v">${p.sun}</span></div>
+      <div class="meta-item"><span class="k">水分</span><span class="v">${p.water}</span></div>
+      <div class="meta-item"><span class="k">株高</span><span class="v">${p.height}</span></div>
+      <div class="meta-item"><span class="k">花色</span><span class="v">${colorDots}</span></div>
+    </div>
+    <div class="detail-section">
+      <h4>特徵描述</h4>
+      <p>${p.desc}</p>
+    </div>
+    <div class="detail-section">
+      <h4>養護要點</h4>
+      <p>${p.care}</p>
+    </div>
+  `;
+
+  panel.classList.add('open');
+  scrim.classList.add('open');
+  panel.setAttribute('aria-hidden','false');
+  document.getElementById('detailCloseBtn').addEventListener('click', closeDetail);
+}
+
+function closeDetail(){
+  document.getElementById('detailPanel').classList.remove('open');
+  document.getElementById('detailScrim').classList.remove('open');
+  document.getElementById('detailPanel').setAttribute('aria-hidden','true');
+}
+
+document.getElementById('detailScrim').addEventListener('click', closeDetail);
+document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeDetail(); });
+
+/* ============ 初始化 ============ */
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  state.search = e.target.value.trim();
+  renderGrid();
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  state.search=''; state.type=null; state.sun=null; state.water=null; state.month=null;
+  document.getElementById('searchInput').value = '';
+  syncChipStyles();
+  renderWheel();
+  renderGrid();
+});
+
+buildChips('typeChips', ['喬木','灌木','草本','藤本','球根','多肉','水生'], 'type');
+buildChips('sunChips', ['全日照','半日照','耐陰'], 'sun');
+buildChips('waterChips', ['耐旱','一般','喜濕'], 'water');
+
+renderWheel();
+renderGrid();
+</script>
+</body>
+</html>
