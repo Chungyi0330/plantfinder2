@@ -1,7 +1,7 @@
 # images 資料夾
 
 這裡放植物的照片檔案。
-
+plant-23.jpg
 - 後台（admin.html）新增植物並上傳圖片時，會自動幫你下載一張檔名為
   `plant-<id>.<副檔名>` 的圖片（例如 `plant-23.jpg`），把它放進這個資料夾即可。
 - `plants-data.js` 裡每筆植物的 `image` 欄位會對應到 `images/plant-23.jpg`
